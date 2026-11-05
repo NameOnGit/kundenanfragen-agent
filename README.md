@@ -88,9 +88,10 @@ Lila Schritte nutzen KI, grüne erledigt ein Mensch, weiße folgen festen Regeln
 - **1.0** (16.10.2026): Gmail Trigger, vier Zweige, Gmail-Entwürfe, Telegram-Warnung
 - **1.1** (16.10.2026): Schleife „Mails einzeln verarbeiten“. Behebt vertauschte Empfänger und Betreffzeilen, wenn mehrere Mails gleichzeitig ankommen.
 
-## Mögliche Erweiterungen
+## Nächste Schritte für den echten Einsatz
 
-- Verarbeitete Mails als gelesen markieren oder mit Label „KI-bearbeitet“ versehen
-- Entwurf im selben Gesprächsverlauf anlegen (Thread ID)
-- Fehler-Benachrichtigung per Error Trigger, zum Beispiel bei leerem API-Guthaben
-- Gemeinsame Regeln (Anrede, Grußformel) an einer zentralen Stelle statt in vier System-Nachrichten
+Für das Portfolio habe ich den Umfang bewusst auf den Kernprozess begrenzt. Würde der Agent bei einem Kunden dauerhaft laufen, kämen diese Punkte dazu:
+
+- Verarbeitete Mails mit dem Label „KI-bearbeitet“ markieren, damit im Postfach sichtbar ist, was schon einen Entwurf hat
+- Fehler-Benachrichtigung per Error Trigger, zum Beispiel wenn das API-Guthaben leer ist
+- Gemeinsame Regeln wie Anrede und Grußformel an einer zentralen Stelle pflegen statt in vier System-Nachrichten

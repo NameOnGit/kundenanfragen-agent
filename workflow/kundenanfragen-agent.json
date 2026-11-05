@@ -1,0 +1,764 @@
+{
+  "name": "Kundenanfragen-Agent",
+  "nodes": [
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "claude-haiku-5-5",
+          "mode": "list",
+          "cachedResultName": "Claude Haiku 5.5"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
+      "typeVersion": 1.6,
+      "position": [
+        624,
+        832
+      ],
+      "id": "022b882e-220a-41b3-8345-ac09cc9c45a8",
+      "name": "Anthropic Chat Model",
+      "credentials": {
+        "anthropicApi": {
+          "id": "F9Y39a3hgCHKitSS",
+          "name": "Anthropic account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"kategorie\": {\n      \"type\": \"string\",\n      \"enum\": [\"Angebotsanfrage\", \"Reklamation\", \"Lieferstatus\", \"Sonstiges\"]\n    },\n    \"kunde\": { \"type\": [\"string\", \"null\"] },\n    \"ansprechpartner\": { \"type\": [\"string\", \"null\"] },\n    \"bestellnummer\": { \"type\": [\"string\", \"null\"] },\n    \"artikel\": { \"type\": [\"string\", \"null\"] },\n    \"menge\": { \"type\": [\"number\", \"null\"] },\n    \"zusammenfassung\": { \"type\": \"string\" }\n  },\n  \"required\": [\"kategorie\", \"kunde\", \"ansprechpartner\", \"bestellnummer\", \"artikel\", \"menge\", \"zusammenfassung\"]\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        752,
+        832
+      ],
+      "id": "80f97db6-cf29-4074-a120-11b0368da7ef",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "claude-haiku-5-5",
+          "mode": "list",
+          "cachedResultName": "Claude Haiku 5.5"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
+      "typeVersion": 1.6,
+      "position": [
+        1200,
+        1024
+      ],
+      "id": "25b078c5-8554-4b4e-9011-0db7c7fe5b3a",
+      "name": "Anthropic Chat Model1",
+      "credentials": {
+        "anthropicApi": {
+          "id": "F9Y39a3hgCHKitSS",
+          "name": "Anthropic account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Sucht eine Bestellung anhand der Bestellnummer und liefert Kunde, Artikel, Status und Liefertermin.",
+        "documentId": {
+          "__rl": true,
+          "value": "DEINE_GOOGLE_SHEET_ID",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Tabellenblatt1"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "Bestellnummer",
+              "lookupValue": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('values0_Value', `Die Bestellnummer genau so, wie sie in der Kundenanfrage steht. Erfinde keine Nummer.`, 'string') }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.7,
+      "position": [
+        1328,
+        1024
+      ],
+      "id": "23c347fe-a2f0-47ed-b3e4-bcfe57d22265",
+      "name": "Bestellungen",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "JSqs37EGSXOnv6pj",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Ein Kunde bittet um ein Angebot.\nKunde: {{ $json.output.kunde }}\nAnsprechpartner: {{ $json.output.ansprechpartner }}\nArtikel: {{ $json.output.artikel }}\nMenge: {{ $json.output.menge }}\nAnliegen: {{ $json.output.zusammenfassung }}\n\nSchreibe einen Antwortentwurf an den Kunden.",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "Du bist Kundenservice-Assistent eines Großhändlers für Autoteile.\nBestätige den Eingang der Angebotsanfrage und kündige an, dass das Angebot in Kürze folgt.\nNenne niemals Preise, Rabatte oder Lieferzeiten.\nFehlt die Menge, bitte höflich darum. Fehlt der Firmenname, bitte um die vollständige Firmenanschrift für das Angebot.\nBeginne direkt mit der Anrede. Schreibe keine Betreffzeile.\nSchreibe reinen Text ohne Markdown, also ohne Sternchen, Rauten oder Aufzählungszeichen.\nAnrede: Wenn ein Ansprechpartner bekannt ist, beginne mit \"Guten Tag\", gefolgt vom vollständigen Namen und einem Komma. Wenn kein Ansprechpartner bekannt ist, beginne mit \"Sehr geehrte Damen und Herren,\". Verwende niemals \"Herr\" oder \"Frau\", weil das Geschlecht nicht sicher bekannt ist.\nAntworte auf Deutsch, freundlich, per Sie, in höchstens 5 Sätzen.\nBeende die Mail mit \"Mit freundlichen Grüßen\" und in der nächsten Zeile \"Ihr Kundenservice-Team\"."
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        1184,
+        -208
+      ],
+      "id": "cd7a9973-ecb9-4e36-bf3b-26a72d8e6a46",
+      "name": "Antwort Angebotsanfrage"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "claude-haiku-5-5",
+          "mode": "list",
+          "cachedResultName": "Claude Haiku 5.5"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
+      "typeVersion": 1.6,
+      "position": [
+        1264,
+        32
+      ],
+      "id": "26b76e67-b973-4e66-82f9-8b414e5692e5",
+      "name": "Anthropic Chat Model2",
+      "credentials": {
+        "anthropicApi": {
+          "id": "F9Y39a3hgCHKitSS",
+          "name": "Anthropic account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "7cd6873f-fb43-463b-a956-cb8cb5ac475c",
+              "name": "antwort",
+              "value": "={{ $json.output.ansprechpartner ? 'Guten Tag ' + $json.output.ansprechpartner + ',' : 'Sehr geehrte Damen und Herren,' }}\n\nvielen Dank für Ihre Nachricht. Wir haben sie erhalten und an die zuständige Stelle weitergeleitet. Wir melden uns so bald wie möglich bei Ihnen.\n\nMit freundlichen Grüßen\nIhr Kundenservice-Team",
+              "type": "string"
+            }
+          ]
+        },
+        "includeOtherFields": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        1248,
+        1184
+      ],
+      "id": "61986991-ce21-4884-a8bd-05262cf1145f",
+      "name": "Antwort Sonstiges"
+    },
+    {
+      "parameters": {
+        "chatId": "DEINE_TELEGRAM_CHAT_ID",
+        "text": "=⚠️ Neue Reklamation\nKunde: {{ $json.output.kunde }}\nAnsprechpartner: {{ $json.output.ansprechpartner }}\nBestellnummer: {{ $json.output.bestellnummer }}\nWorum geht es: {{ $json.output.zusammenfassung }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1248,
+        592
+      ],
+      "id": "daf947cb-033a-411f-a83b-1c40ca11d71e",
+      "name": "Warnung Reklamation",
+      "webhookId": "8f675872-239b-4439-ae23-60e9799cafe5",
+      "credentials": {
+        "telegramApi": {
+          "id": "AvrZN3suVtGlaXyn",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "claude-haiku-5-5",
+          "mode": "list",
+          "cachedResultName": "Claude Haiku 5.5"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
+      "typeVersion": 1.6,
+      "position": [
+        1264,
+        432
+      ],
+      "id": "60bb53d2-274a-4bf3-8dea-ff4265e17d17",
+      "name": "Anthropic Chat Model3",
+      "credentials": {
+        "anthropicApi": {
+          "id": "F9Y39a3hgCHKitSS",
+          "name": "Anthropic account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Ein Kunde hat eine Reklamation.\nKunde: {{ $json.output.kunde }}\nAnsprechpartner: {{ $json.output.ansprechpartner }}\nBestellnummer: {{ $json.output.bestellnummer }}\nArtikel: {{ $json.output.artikel }}\nAnliegen: {{ $json.output.zusammenfassung }}\n\nSchreibe einen Antwortentwurf an den Kunden.",
+        "messages": {
+          "messageValues": [
+            {
+              "message": "Du bist Kundenservice-Assistent eines Großhändlers für Autoteile.\nEntschuldige dich für die Unannehmlichkeiten und bestätige, dass die Reklamation eingegangen ist und geprüft wird.\nSage zu, dass sich ein Mitarbeiter zeitnah meldet.\nVersprich niemals Ersatz, Gutschrift, Rückerstattung oder Termine. Darüber entscheidet ein Mitarbeiter.\nStelle keine Vermutungen über die Ursache an und gib niemandem die Schuld.\nBeginne direkt mit der Anrede. Schreibe keine Betreffzeile.\nSchreibe reinen Text ohne Markdown, also ohne Sternchen, Rauten oder Aufzählungszeichen.\nAnrede: Wenn ein Ansprechpartner bekannt ist, beginne mit \"Guten Tag\", gefolgt vom vollständigen Namen und einem Komma. Wenn kein Ansprechpartner bekannt ist, beginne mit \"Sehr geehrte Damen und Herren,\". Verwende niemals \"Herr\" oder \"Frau\", weil das Geschlecht nicht sicher bekannt ist.\nAntworte auf Deutsch, freundlich, per Sie, in höchstens 5 Sätzen.\nBeende die Mail mit \"Mit freundlichen Grüßen\" und in der nächsten Zeile \"Ihr Kundenservice-Team\"."
+            }
+          ]
+        },
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        1184,
+        192
+      ],
+      "id": "8917d321-6654-452f-bf51-110476910b27",
+      "name": "Antwort Reklamation"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "d6a8d58f-b835-4e28-bb9e-3345ad541bc3",
+              "name": "antwort",
+              "value": "={{ $json.antwort || $json.text || $json.output }}",
+              "type": "string"
+            },
+            {
+              "id": "7f3f9ffa-3c86-4567-9c2c-9235d15cb9b8",
+              "name": "empfaenger",
+              "value": "={{ $('Mail-Daten').first().json.absender }}",
+              "type": "string"
+            },
+            {
+              "id": "e2746963-f9b5-4c28-a2f3-a44a4caee19d",
+              "name": "betreff",
+              "value": "=Re: {{ $('Mail-Daten').first().json.betreff }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        1536,
+        544
+      ],
+      "id": "ccc8d54c-4e76-442d-bc4e-922ca12289ef",
+      "name": "Antwort vorbereiten"
+    },
+    {
+      "parameters": {
+        "pollTimes": {
+          "item": [
+            {
+              "mode": "everyMinute"
+            }
+          ]
+        },
+        "simple": false,
+        "filters": {
+          "readStatus": "unread"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.gmailTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        -64,
+        960
+      ],
+      "id": "032377af-8748-4f5a-b320-415715e90b37",
+      "name": "Neue Mail",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "dseijG177S1n2CXs",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "2838fb6b-e6de-4600-a087-61e6513d70ba",
+              "name": "email_text",
+              "value": "={{ $json.text }}",
+              "type": "string"
+            },
+            {
+              "id": "0a214da7-e8c5-48e9-a0a2-6f74eed3efe1",
+              "name": "absender",
+              "value": "={{ $json.from.value[0].address }}",
+              "type": "string"
+            },
+            {
+              "id": "21f42b8d-51bb-4d4a-896e-7d2b19b9ff3b",
+              "name": "betreff",
+              "value": "={{ $json.subject }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.5,
+      "position": [
+        384,
+        592
+      ],
+      "id": "c02aac4f-3247-47bc-8314-a75692062a0f",
+      "name": "Mail-Daten"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        160,
+        960
+      ],
+      "id": "8fa2d9e6-1d25-4a7f-8b9e-839df082ab57",
+      "name": "Mails einzeln verarbeiten"
+    },
+    {
+      "parameters": {
+        "resource": "draft",
+        "subject": "={{ $json.betreff }}",
+        "message": "={{ $json.antwort }}",
+        "options": {
+          "sendTo": "={{ $json.empfaenger }}"
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.2,
+      "position": [
+        1760,
+        816
+      ],
+      "id": "682bb863-7b6f-41dd-8ac6-8468b852538b",
+      "name": "Gmail-Entwurf anlegen",
+      "webhookId": "0b8316c0-c2ae-4e03-86b4-b92491078d3d",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "dseijG177S1n2CXs",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Du bearbeitest Kundenanfragen eines Großhändlers für Autoteile.\nOrdne die folgende E-Mail genau einer Kategorie zu: Angebotsanfrage, Reklamation, Lieferstatus oder Sonstiges.\nZiehe außerdem diese Angaben heraus: Firma des Kunden, Ansprechpartner, Bestellnummer, Artikel, Menge. Wenn eine Angabe fehlt, gib null zurück und erfinde nichts.\nSchreibe zusätzlich eine Zusammenfassung in einem Satz.\n\nE-Mail:\n {{ $json.email_text }}",
+        "hasOutputParser": true,
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        608,
+        592
+      ],
+      "id": "3accf83f-0675-4ec9-a32f-85ca19572f21",
+      "name": "E-Mail verstehen"
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "leftValue": "={{ $json.output.kategorie }}",
+                    "rightValue": "Angebotsanfrage",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    },
+                    "id": "a601d30d-9527-40db-bfc1-104bc92dac80"
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Angebotsanfrage"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "1203e9ad-28df-439d-a973-29f646e8c695",
+                    "leftValue": "={{ $json.output.kategorie }}",
+                    "rightValue": "Reklamation",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Reklamation"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "1b975475-b2d6-434f-aca4-04d796d1952c",
+                    "leftValue": "={{ $json.output.kategorie }}",
+                    "rightValue": "Lieferstatus",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Lieferstatus"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "strict",
+                  "version": 3
+                },
+                "conditions": [
+                  {
+                    "id": "2d6b886e-39b2-4c57-a0cc-7387b52ba1e5",
+                    "leftValue": "={{ $json.output.kategorie }}",
+                    "rightValue": "Sonstiges",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "Sonstiges"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.4,
+      "position": [
+        960,
+        560
+      ],
+      "id": "8150ac21-c7e8-446a-8da1-bb8582776dde",
+      "name": "Switch nach Kategorie"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Ein Kunde fragt nach dem Lieferstatus seiner Bestellung.\nKunde: {{ $json.output.kunde }}\nAnsprechpartner: {{ $json.output.ansprechpartner }}\nBestellnummer: {{ $json.output.bestellnummer }}\nAnliegen: {{ $json.output.zusammenfassung }}\n\nSchau in der Bestell-Tabelle nach und schreibe einen Antwortentwurf an den Kunden.",
+        "options": {
+          "systemMessage": "Du bist Kundenservice-Assistent eines Großhändlers für Autoteile.\nNutze immer das Werkzeug \"Bestellungen\", um Status und Liefertermin nachzuschlagen.\nErfinde niemals Status oder Liefertermine.\nWenn die Bestellnummer fehlt oder nicht gefunden wird, schreibe, dass du die Bestellung nicht finden konntest, und bitte höflich um die Bestellnummer.\nErwähne keine internen Systeme, Tabellen oder Werkzeuge.\nFormuliere Liefertermine als voraussichtlich, nicht als verbindlich zugesagt.\nBeginne direkt mit der Anrede. Schreibe keine Betreffzeile.\nSchreibe reinen Text ohne Markdown, also ohne Sternchen, Rauten oder Aufzählungszeichen.\nAnrede: Wenn ein Ansprechpartner bekannt ist, beginne mit \"Guten Tag\", gefolgt vom vollständigen Namen und einem Komma. Wenn kein Ansprechpartner bekannt ist, beginne mit \"Sehr geehrte Damen und Herren,\". Verwende niemals \"Herr\" oder \"Frau\", weil das Geschlecht nicht sicher bekannt ist.\nAntworte auf Deutsch, freundlich, per Sie, in höchstens 5 Sätzen.\nBeende die Mail mit \"Mit freundlichen Grüßen\" und in der nächsten Zeile \"Ihr Kundenservice-Team\".\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        1184,
+        784
+      ],
+      "id": "f30d8f33-e224-4c96-a7bc-af408deb8f30",
+      "name": "Agent Lieferstatus"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Anthropic Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "E-Mail verstehen",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "E-Mail verstehen",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Anthropic Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Agent Lieferstatus",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Bestellungen": {
+      "ai_tool": [
+        [
+          {
+            "node": "Agent Lieferstatus",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Anthropic Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Antwort Angebotsanfrage",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Anthropic Chat Model3": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Antwort Reklamation",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Antwort Angebotsanfrage": {
+      "main": [
+        [
+          {
+            "node": "Antwort vorbereiten",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Antwort Reklamation": {
+      "main": [
+        [
+          {
+            "node": "Antwort vorbereiten",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Antwort Sonstiges": {
+      "main": [
+        [
+          {
+            "node": "Antwort vorbereiten",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Antwort vorbereiten": {
+      "main": [
+        [
+          {
+            "node": "Gmail-Entwurf anlegen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Neue Mail": {
+      "main": [
+        [
+          {
+            "node": "Mails einzeln verarbeiten",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mail-Daten": {
+      "main": [
+        [
+          {
+            "node": "E-Mail verstehen",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mails einzeln verarbeiten": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Mail-Daten",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Gmail-Entwurf anlegen": {
+      "main": [
+        [
+          {
+            "node": "Mails einzeln verarbeiten",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "E-Mail verstehen": {
+      "main": [
+        [
+          {
+            "node": "Switch nach Kategorie",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch nach Kategorie": {
+      "main": [
+        [
+          {
+            "node": "Antwort Angebotsanfrage",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Warnung Reklamation",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Antwort Reklamation",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Agent Lieferstatus",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Antwort Sonstiges",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agent Lieferstatus": {
+      "main": [
+        [
+          {
+            "node": "Antwort vorbereiten",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "versionId": "f5c632db-e59c-451e-aa5d-d30619ca43fe",
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "nodeGroups": [],
+  "id": "VBhxwBI3IOesmdoI",
+  "tags": []
+}
